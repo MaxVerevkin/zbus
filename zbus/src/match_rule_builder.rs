@@ -200,12 +200,13 @@ impl<'m> MatchRuleBuilder<'m> {
     }
 
     /// Set 0th argument's namespace.
-    pub fn arg0namespace<I>(mut self, namespace: I) -> Result<Self>
+    ///
+    /// `namespace` must be like a bus name, except that it is not required to contain a '.' (period)
+    pub fn arg0namespace<S>(mut self, namespace: S) -> Result<Self>
     where
-        I: TryInto<InterfaceName<'m>>,
-        I::Error: Into<Error>,
+        S: Into<Str<'m>>,
     {
-        self.0.arg0namespace = Some(namespace.try_into().map_err(Into::into)?);
+        self.0.arg0namespace = Some(namespace.into());
 
         Ok(self)
     }

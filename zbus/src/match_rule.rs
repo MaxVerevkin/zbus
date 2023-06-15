@@ -92,7 +92,7 @@ pub struct MatchRule<'m> {
     pub(crate) destination: Option<UniqueName<'m>>,
     pub(crate) args: Vec<(u8, Str<'m>)>,
     pub(crate) arg_paths: Vec<(u8, ObjectPath<'m>)>,
-    pub(crate) arg0namespace: Option<InterfaceName<'m>>,
+    pub(crate) arg0namespace: Option<Str<'m>>,
 }
 
 assert_impl_all!(MatchRule<'_>: Send, Sync, Unpin);
@@ -144,13 +144,8 @@ impl<'m> MatchRule<'m> {
     }
 
     /// Match messages whose first argument is within the specified namespace.
-    ///
-    /// Note that while the spec allows this to be any string that's a valid bus or interface name
-    /// except that it can have no `.`, we only allow valid interface names. The reason is not only
-    /// to keep things simple and type safe at the same time but also for the fact that use cases of
-    /// only matching on the first component of a bus or interface name are unheard of.
-    pub fn arg0namespace(&self) -> Option<&InterfaceName<'_>> {
-        self.arg0namespace.as_ref()
+    pub fn arg0namespace(&self) -> Option<Str<'_>> {
+        self.arg0namespace.as_ref().map(|a| a.as_ref())
     }
 
     /// Creates an owned clone of `self`.
@@ -277,7 +272,7 @@ impl<'m> MatchRule<'m> {
 
         // The arg0 namespace.
         if let Some(arg0_ns) = self.arg0namespace() {
-            if let Ok(arg0) = msg.body_unchecked::<InterfaceName<'_>>() {
+            if let Ok(arg0) = msg.body_unchecked::<Str<'_>>() {
                 if !arg0.starts_with(arg0_ns.as_str()) {
                     return Ok(false);
                 }
@@ -363,7 +358,7 @@ impl ToString for MatchRule<'_> {
             add_match_rule_string_component(&mut s, &format!("arg{i}path"), arg_path);
         }
         if let Some(arg0namespace) = self.arg0namespace() {
-            add_match_rule_string_component(&mut s, "arg0namespace", arg0namespace)
+            add_match_rule_string_component(&mut s, "arg0namespace", &*arg0namespace)
         }
 
         s

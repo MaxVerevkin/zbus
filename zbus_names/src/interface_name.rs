@@ -184,6 +184,12 @@ impl<'name> TryFrom<Cow<'name, str>> for InterfaceName<'name> {
     }
 }
 
+impl<'name> From<InterfaceName<'name>> for Str<'name> {
+    fn from(value: InterfaceName<'name>) -> Self {
+        value.0
+    }
+}
+
 fn ensure_correct_interface_name(name: &str) -> Result<()> {
     // Rules
     //
